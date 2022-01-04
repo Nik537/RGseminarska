@@ -28,7 +28,7 @@ class App extends Application {
 
         this.camera.camera = new PerspectiveCamera();
 
-        this.car = await this.loader.loadNode('carbody'); //TO JE TREBA PREMIKAT
+        this.car = await this.loader.loadNode('carbody');
         this.scene.addNode(this.car);
         
 
@@ -38,11 +38,6 @@ class App extends Application {
         this.renderer = new Renderer(this.gl);
         this.renderer.prepareScene(this.scene);
         this.resize();
-    }
-
-    update() {
-        this.car
-        
     }
 
     render() {

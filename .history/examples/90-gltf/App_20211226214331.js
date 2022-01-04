@@ -28,7 +28,7 @@ class App extends Application {
 
         this.camera.camera = new PerspectiveCamera();
 
-        this.car = await this.loader.loadNode('carbody'); //TO JE TREBA PREMIKAT
+        this.car = await this.loader.loadNode('carbody');
         this.scene.addNode(this.car);
         
 
@@ -38,11 +38,6 @@ class App extends Application {
         this.renderer = new Renderer(this.gl);
         this.renderer.prepareScene(this.scene);
         this.resize();
-    }
-
-    update() {
-        this.car
-        
     }
 
     render() {
@@ -63,9 +58,7 @@ class App extends Application {
     }
 
 }
-// TODO premikanje avta
-// Ta update je iz drugega projektna, tu je za pomoc
-/*
+
 update() {
     if (this.car) {
         this.time = performance.now();
@@ -195,7 +188,7 @@ update() {
         c.updateMatrix();
     }
 }
-*/
+
 
 document.addEventListener('DOMContentLoaded', () => {
     const canvas = document.querySelector('canvas');

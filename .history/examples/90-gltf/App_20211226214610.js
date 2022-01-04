@@ -40,11 +40,6 @@ class App extends Application {
         this.resize();
     }
 
-    update() {
-        this.car
-        
-    }
-
     render() {
         if (this.renderer) {
             this.renderer.render(this.scene, this.camera);
