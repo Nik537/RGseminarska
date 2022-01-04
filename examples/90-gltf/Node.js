@@ -38,12 +38,23 @@ export class Node {
         mat4.getScaling(this.scale, this.matrix);
     }
 
+    rotateY(angle) {
+        mat4.rotateY(this.matrix, this.matrix, angle)
+    }
+
     updateMatrix() {
         mat4.fromRotationTranslationScale(
             this.matrix,
             this.rotation,
             this.translation,
             this.scale);
+    }
+    
+    updateCar() {
+        mat4.fromRotationTranslation(
+            this.matrix,
+            this.rotation,
+            this.translation);
     }
 
     addChild(node) {

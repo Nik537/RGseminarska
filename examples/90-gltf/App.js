@@ -1,10 +1,11 @@
-import {Application} from '../../common/engine/Application.js';
+import { Application } from '../../common/engine/Application.js';
 
-import {GLTFLoader} from './GLTFLoader.js';
-import {PerspectiveCamera} from './PerspectiveCamera.js';
-import {Renderer} from './Renderer.js';
+import { GLTFLoader } from './GLTFLoader.js';
+import { PerspectiveCamera } from './PerspectiveCamera.js';
+import { Renderer } from './Renderer.js';
 
-import {Node} from './Node.js'
+import { Node } from './Node.js'
+import { quat } from '../../lib/gl-matrix-module.js';
 
 const mat4 = glMatrix.mat4;
 const vec3 = glMatrix.vec3;
@@ -14,11 +15,11 @@ class App extends Application {
     async start() {
 
         this.loader = new GLTFLoader();
-        
+
         await this.loader.load('../../common/models/carRoad2/carRoad2.gltf');
-        
+
         this.scene = await this.loader.loadScene(this.loader.defaultScene);
-     
+
         this.camera = new Node();
         //if(pov) this.camera.translation = vec3.fromValues(0,2,0);
         //else
@@ -29,20 +30,141 @@ class App extends Application {
         this.camera.camera = new PerspectiveCamera();
 
         this.car = await this.loader.loadNode('carbody'); //TO JE TREBA PREMIKAT
-        this.scene.addNode(this.car);
-        
+        this.cube1 = await this.loader.loadNode('Cube.001');
+        this.cube2 = await this.loader.loadNode('Cube');
+        this.cube3 = await this.loader.loadNode('Cube.002');
+
+        this.fance1 = await this.loader.loadNode('Cube.003');
+        this.fance2 = await this.loader.loadNode('Cube.004');
+        //this.scene.addNode(this.car);
+        //this.scene.addNode(this.cube);
 
         this.scene.addNode(this.camera);
-         
+
 
         this.renderer = new Renderer(this.gl);
         this.renderer.prepareScene(this.scene);
         this.resize();
+        this.initHandlers();
+
+        //this.sideSpeed = 0.0;
+
+        this.speed = 0.0;
+        this.maxSpeed = 0.8;
+        this.acceleration = 0.01;
+        this.rotation = 0;
+        this.rotatonSpeed = 0.012;
     }
 
+    initHandlers() {
+        this.keyDownHandler = this.keyDownHandler.bind(this);
+        this.keyUpHandler = this.keyUpHandler.bind(this);
+        this.keys = {};
+
+        document.addEventListener('keydown', this.keyDownHandler);
+        document.addEventListener('keyup', this.keyUpHandler);
+    }
+
+    keyDownHandler(e) {
+        if (e !== undefined) {
+            this.keys[e.code] = true;
+        }
+    }
+    keyUpHandler(e) {
+        this.keys[e.code] = false;
+    }
+
+    collision(a) {
+        for (const cube of a) {
+            if ((this.car.translation[2] - cube.translation[2] < 1 && this.car.translation[2] - cube.translation[2] > -1) && //naprej, nazaj
+                (this.car.translation[0] - cube.translation[0] < 2 && this.car.translation[0] - cube.translation[0] > -2)) { //levo, desno
+                return true
+            }
+        }
+        return false;
+    }
+
+
     update() {
-        this.car
-        
+        try {
+            //TODO 
+            if (this.car.translation[0] - this.fance2.translation[0] < 1.5) {
+                console.log("left fance collision")
+            }
+            if (this.car.translation[0] - this.fance1.translation[0] > -1.5) {
+                console.log("right fance collision")
+            }
+
+            if (this.collision([this.cube1, this.cube2, this.cube3])) {
+                console.log("collision");
+                this.speed = 0 - this.speed;
+                //this.sideSpeed = 0 - this.sideSpeed;
+            }
+            else {
+                if (this.keys['KeyW']) {
+                    if (this.speed < 0) {
+                        this.speed *= 0.95;
+                    }
+                    this.speed -= this.acceleration;
+                }
+                else if (this.keys['KeyS']) {
+                    if (this.speed > 0) {
+                        this.speed *= 0.95;
+                    }
+                    this.speed += this.acceleration;
+                }
+
+                else {
+                    this.speed *= 0.95;
+                }
+            }
+
+            if (this.speed > this.maxSpeed) {
+                this.speed = this.maxSpeed;
+            }
+
+            if (this.speed < -this.maxSpeed) {
+                this.speed = -this.maxSpeed;
+            }
+
+            if (this.keys['KeyA']) {
+                this.rotation += this.rotatonSpeed;
+            }
+            if (this.keys['KeyD']) {
+                this.rotation -= this.rotatonSpeed;
+            }
+            /*
+            if (this.keys['KeyE']) {
+                this.car.translation[2] += -this.speed*3;
+                this.car.updateMatrix();
+                this.camera.translation[2] += -this.speed*3;
+                this.camera.updateMatrix();
+            }
+            */
+
+            if (this.keys['KeyP']) {
+                this.camera.translation = vec3.fromValues(0, 2, 0);
+            }
+
+
+            // let test = new Node({ rotation: quat.fromValues(0, 0, 0.1, 1) });
+            // this.car.translation[2] += -this.speed;
+            
+            this.car.translation[0] += this.speed * Math.sin(this.rotation);
+            this.car.translation[2] += this.speed * Math.cos(this.rotation);
+            
+            
+            this.car.updateMatrix();
+            this.car.rotateY(this.rotation);
+            this.camera.translation[0] += this.speed * Math.sin(this.rotation);
+            this.camera.translation[2] += this.speed * Math.cos(this.rotation);
+
+            this.camera.updateMatrix();
+        } catch (error) {
+            console.log(error);
+        }
+
+        this.keyDownHandler();
     }
 
     render() {
