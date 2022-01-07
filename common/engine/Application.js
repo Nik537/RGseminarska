@@ -5,9 +5,11 @@ export class Application {
 
         this.canvas = canvas;
         this._initGL(glOptions);
-        this.start();
 
-        requestAnimationFrame(this._update);
+        Promise.resolve(this.start()).then(
+            () => requestAnimationFrame(this._update)
+        );
+
     }
 
     _initGL(glOptions) {

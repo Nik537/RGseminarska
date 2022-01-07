@@ -16,8 +16,9 @@ class App extends Application {
 
         this.loader = new GLTFLoader();
 
-        await this.loader.load('../../common/models/carRoad2/carRoad2.gltf');
-
+        // await this.loader.load('../../common/models/carRoad2/carRoad2.gltf');
+        await this.loader.load('../../common/models/test/carRoad3.gltf');
+        
         this.scene = await this.loader.loadScene(this.loader.defaultScene);
 
         this.camera = new Node();
@@ -29,15 +30,15 @@ class App extends Application {
 
         this.camera.camera = new PerspectiveCamera();
 
-        this.car = await this.loader.loadNode('carbody'); //TO JE TREBA PREMIKAT
+        this.car = await this.loader.loadNode('car body'); //TO JE TREBA PREMIKAT
         this.cube1 = await this.loader.loadNode('Cube.001');
         this.cube2 = await this.loader.loadNode('Cube');
         this.cube3 = await this.loader.loadNode('Cube.002');
 
         this.fance1 = await this.loader.loadNode('Cube.003');
         this.fance2 = await this.loader.loadNode('Cube.004');
-        //this.scene.addNode(this.car);
-        //this.scene.addNode(this.cube);
+        this.scene.addNode(this.car);
+        // this.scene.addNode(this.cube);
 
         this.scene.addNode(this.camera);
 
@@ -86,16 +87,21 @@ class App extends Application {
 
 
     update() {
+        this.keyDownHandler();
+
         try {
-            //TODO 
+            //TODO
             if (this.car.translation[0] - this.fance2.translation[0] < 1.5) {
                 console.log("left fance collision")
+                this.speed = 0 - this.speed;
             }
             if (this.car.translation[0] - this.fance1.translation[0] > -1.5) {
                 console.log("right fance collision")
+                this.speed = 0 - this.speed;
             }
 
             if (this.collision([this.cube1, this.cube2, this.cube3])) {
+            // if (this.collision([])) {
                 console.log("collision");
                 this.speed = 0 - this.speed;
                 //this.sideSpeed = 0 - this.sideSpeed;
@@ -108,6 +114,7 @@ class App extends Application {
                     this.speed -= this.acceleration;
                 }
                 else if (this.keys['KeyS']) {
+                    debugger;
                     if (this.speed > 0) {
                         this.speed *= 0.95;
                     }
@@ -128,10 +135,18 @@ class App extends Application {
             }
 
             if (this.keys['KeyA']) {
-                this.rotation += this.rotatonSpeed;
+                if (this.speed < 0.1) {
+                    this.rotation += this.rotatonSpeed;
+                } else {
+                    this.rotation -= this.rotatonSpeed;
+                }
             }
             if (this.keys['KeyD']) {
-                this.rotation -= this.rotatonSpeed;
+                if (this.speed < 0.1) {
+                    this.rotation -= this.rotatonSpeed;
+                } else {
+                    this.rotation += this.rotatonSpeed;
+                }
             }
             /*
             if (this.keys['KeyE']) {
@@ -143,17 +158,24 @@ class App extends Application {
             */
 
             if (this.keys['KeyP']) {
-                this.camera.translation = vec3.fromValues(0, 2, 0);
+                //this.camera.translation = vec3.fromValues(0, 2, 0);
+                this.camera.translation = vec3.fromValues(
+                    this.car.translation[0],
+                    this.car.translation[1] + 2,
+                    this.car.translation[2]);
+            }
+            if (this.keys['KeyO']) {
+                this.camera.translation = vec3.fromValues(0, 3, 7);
             }
 
 
             // let test = new Node({ rotation: quat.fromValues(0, 0, 0.1, 1) });
             // this.car.translation[2] += -this.speed;
-            
+
             this.car.translation[0] += this.speed * Math.sin(this.rotation);
             this.car.translation[2] += this.speed * Math.cos(this.rotation);
-            
-            
+
+
             this.car.updateMatrix();
             this.car.rotateY(this.rotation);
             this.camera.translation[0] += this.speed * Math.sin(this.rotation);
@@ -163,8 +185,6 @@ class App extends Application {
         } catch (error) {
             console.log(error);
         }
-
-        this.keyDownHandler();
     }
 
     render() {
@@ -196,18 +216,18 @@ update() {
 
         const c = this.car;
         this.speedometer.draw(this.speed);
-        
+
         if (this.cp.finished) {
             this.keys['KeyW'] = false;
             this.keys['KeyS'] = false;
             this.keys['KeyA'] = false;
             this.keys['KeyD'] = false;
-            
+
             var delta = dt/10;
             var sensitivity = 0.000141;
 
             this.camera.offset +=360 * delta * sensitivity;
-            this.rot+=360 * delta * sensitivity; 
+            this.rot+=360 * delta * sensitivity;
             this.camera.angle+=0.1;
 
             quat.fromEuler(this.camera.rotation, 0, (this.camera.angle+this.angle)*2, 0);
@@ -216,7 +236,7 @@ update() {
             this.camera.translation[0] = this.car.translation[0] - (this.camera.zoom * rotX);
             this.camera.translation[1] = this.car.translation[1] + this.camera.yaw;
             this.camera.translation[2] = this.car.translation[2] - (this.camera.zoom * rotZ);
-          
+
         }
 
         if (this.timer.getTime()<0) {
@@ -231,9 +251,9 @@ update() {
         this.cp.update(this.car, this.keys);
 
         let angles = this.getEuler(c.rotation);
-        
+
         const forward = vec3.set(vec3.create(), Math.sin(angles[1]), 0, -Math.cos(angles[1]));
-       
+
         if (this.keys['KeyR']) {
             this.reset();
         }
@@ -287,9 +307,9 @@ update() {
                 this.car.acceleration+=0.01;
             }
         }
-    
+
         vec3.scaleAndAdd(c.velocity, c.velocity, acc,2*dt*c.acceleration);
-        
+
         if (!this.keys['KeyW'] && !this.keys['KeyS']) {
             vec3.scale(c.velocity, c.velocity, 1 - c.friction);
             if (this.camera.camera.fov != this.camera.fov) {
