@@ -274,7 +274,6 @@ export class GLTFLoader {
 
     async loadNode(nameOrIndex) {
         const gltfSpec = this.findByNameOrIndex(this.gltf.nodes, nameOrIndex);
-        debugger;
         if (this.cache.has(gltfSpec)) {
             return this.cache.get(gltfSpec);
         }

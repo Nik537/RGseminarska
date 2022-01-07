@@ -17,6 +17,8 @@ export class Application {
         try {
             this.gl = this.canvas.getContext('webgl2', glOptions);
         } catch (error) {
+            debugger;
+            console.log(error);
         }
 
         if (!this.gl) {

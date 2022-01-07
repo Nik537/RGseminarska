@@ -13,11 +13,11 @@ const vec3 = glMatrix.vec3;
 class App extends Application {
 
     async start() {
-
         this.loader = new GLTFLoader();
 
         // await this.loader.load('../../common/models/carRoad2/carRoad2.gltf');
-        await this.loader.load('../../common/models/test/carRoad3.gltf');
+        await this.loader.load('../../common/models/carRoad32/carRoad32.gltf');
+        // await this.loader.load('../../common/models/test/carRoad3.gltf');
         
         this.scene = await this.loader.loadScene(this.loader.defaultScene);
 
@@ -30,7 +30,7 @@ class App extends Application {
 
         this.camera.camera = new PerspectiveCamera();
 
-        this.car = await this.loader.loadNode('car body'); //TO JE TREBA PREMIKAT
+        this.car = await this.loader.loadNode('carbody'); //TO JE TREBA PREMIKAT
         this.cube1 = await this.loader.loadNode('Cube.001');
         this.cube2 = await this.loader.loadNode('Cube');
         this.cube3 = await this.loader.loadNode('Cube.002');
@@ -38,7 +38,6 @@ class App extends Application {
         this.fance1 = await this.loader.loadNode('Cube.003');
         this.fance2 = await this.loader.loadNode('Cube.004');
         this.scene.addNode(this.car);
-        // this.scene.addNode(this.cube);
 
         this.scene.addNode(this.camera);
 
@@ -100,8 +99,8 @@ class App extends Application {
                 this.speed = 0 - this.speed;
             }
 
-            if (this.collision([this.cube1, this.cube2, this.cube3])) {
-            // if (this.collision([])) {
+            // if (this.collision([this.cube1, this.cube2, this.cube3])) {
+            if (this.collision([])) {
                 console.log("collision");
                 this.speed = 0 - this.speed;
                 //this.sideSpeed = 0 - this.sideSpeed;
