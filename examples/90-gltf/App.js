@@ -16,30 +16,39 @@ class App extends Application {
         this.loader = new GLTFLoader();
 
         // await this.loader.load('../../common/models/carRoad2/carRoad2.gltf');
-        await this.loader.load('../../common/models/carRoad32/carRoad32.gltf');
+        // await this.loader.load('../../common/models/carRoad32/carRoad32.gltf');
         // await this.loader.load('../../common/models/test/carRoad3.gltf');
+        // await this.loader.load('../../common/models/test/test.gltf');
+        await this.loader.load('../../common/models/lap2/lap.gltf');
         
         this.scene = await this.loader.loadScene(this.loader.defaultScene);
 
+        this.car = await this.loader.loadNode('carbody'); //TO JE TREBA PREMIKAT
+        
         this.camera = new Node();
+        this.car.addChild(this.camera);
         //if(pov) this.camera.translation = vec3.fromValues(0,2,0);
         //else
         //this.camera.rotation = vec3.fromValues(0, 0, 0);
-        this.camera.translation = vec3.fromValues(-0.21, 3, 7); //0,3,6
+        this.camera.translation = vec3.fromValues(-0.21, 4, -7); //0,3,6
         this.camera.updateMatrix();
+        // this.camera.rotation = vec3.fromValues(0, 0, 0);
+
 
         this.camera.camera = new PerspectiveCamera();
 
-        this.car = await this.loader.loadNode('carbody'); //TO JE TREBA PREMIKAT
-        this.cube1 = await this.loader.loadNode('Cube.001');
-        this.cube2 = await this.loader.loadNode('Cube');
-        this.cube3 = await this.loader.loadNode('Cube.002');
 
-        this.fance1 = await this.loader.loadNode('Cube.003');
-        this.fance2 = await this.loader.loadNode('Cube.004');
-        this.scene.addNode(this.car);
+        this.camera.updateMatrix();
 
-        this.scene.addNode(this.camera);
+
+        // this.cube1 = await this.loader.loadNode('Cube.001');
+        // this.cube2 = await this.loader.loadNode('Cube');
+        // this.cube3 = await this.loader.loadNode('Cube.002');
+
+        // this.fance1 = await this.loader.loadNode('Cube.003');
+        // this.fance2 = await this.loader.loadNode('Cube.004');
+        // this.scene.addNode(this.car);
+        // this.scene.addNode(this.camera);
 
 
         this.renderer = new Renderer(this.gl);
@@ -50,16 +59,18 @@ class App extends Application {
         //this.sideSpeed = 0.0;
 
         this.speed = 0.0;
-        this.maxSpeed = 0.8;
+        this.maxSpeed = 1;
         this.acceleration = 0.01;
         this.rotation = 0;
         this.rotatonSpeed = 0.012;
+        this.rotate = true;
     }
 
     initHandlers() {
         this.keyDownHandler = this.keyDownHandler.bind(this);
         this.keyUpHandler = this.keyUpHandler.bind(this);
         this.keys = {};
+        this.keys["KeyR"] = true;
 
         document.addEventListener('keydown', this.keyDownHandler);
         document.addEventListener('keyup', this.keyUpHandler);
@@ -72,6 +83,16 @@ class App extends Application {
     }
     keyUpHandler(e) {
         this.keys[e.code] = false;
+        if (e.code == "KeyR") {
+            this.rotate = true;
+        }
+    }
+
+    rotateCamera() {
+        if (this.rotate) {
+            this.camera.camera.matrix = mat4.rotateY(this.camera.camera.matrix, this.camera.camera.matrix, Math.PI);
+            this.rotate = false;
+        }
     }
 
     collision(a) {
@@ -88,16 +109,18 @@ class App extends Application {
     update() {
         this.keyDownHandler();
 
+
+
         try {
             //TODO
-            if (this.car.translation[0] - this.fance2.translation[0] < 1.5) {
-                console.log("left fance collision")
-                this.speed = 0 - this.speed;
-            }
-            if (this.car.translation[0] - this.fance1.translation[0] > -1.5) {
-                console.log("right fance collision")
-                this.speed = 0 - this.speed;
-            }
+            // if (this.car.translation[0] - this.fance2.translation[0] < 1.5) {
+            //     console.log("left fance collision")
+            //     this.speed = 0 - this.speed;
+            // }
+            // if (this.car.translation[0] - this.fance1.translation[0] > -1.5) {
+            //     console.log("right fance collision")
+            //     this.speed = 0 - this.speed;
+            // }
 
             // if (this.collision([this.cube1, this.cube2, this.cube3])) {
             if (this.collision([])) {
@@ -157,14 +180,17 @@ class App extends Application {
             */
 
             if (this.keys['KeyP']) {
-                //this.camera.translation = vec3.fromValues(0, 2, 0);
-                this.camera.translation = vec3.fromValues(
-                    this.car.translation[0],
-                    this.car.translation[1] + 2,
-                    this.car.translation[2]);
+                // this.camera.translation = vec3.fromValues(0, 2, 0);
+                // this.camera.translation = vec3.fromValues(
+                //     this.car.translation[0],
+                //     this.car.translation[1] + 2,
+                //     this.car.translation[2]);
             }
             if (this.keys['KeyO']) {
                 this.camera.translation = vec3.fromValues(0, 3, 7);
+            }
+            if (this.keys['KeyR']) {
+                this.rotateCamera();
             }
 
 
@@ -174,13 +200,15 @@ class App extends Application {
             this.car.translation[0] += this.speed * Math.sin(this.rotation);
             this.car.translation[2] += this.speed * Math.cos(this.rotation);
 
+            // this.camera.camera.matrix = mat4.rotateY(this.camera.camera.matrix, this.camera.camera.matrix, Math.PI);
+            // this.camera.updateMatrix();
 
             this.car.updateMatrix();
             this.car.rotateY(this.rotation);
-            this.camera.translation[0] += this.speed * Math.sin(this.rotation);
-            this.camera.translation[2] += this.speed * Math.cos(this.rotation);
+            // this.camera.translation[0] += this.speed * Math.sin(this.rotation);
+            // this.camera.translation[2] += this.speed * Math.cos(this.rotation);
 
-            this.camera.updateMatrix();
+            // this.camera.updateMatrix();
         } catch (error) {
             console.log(error);
         }
