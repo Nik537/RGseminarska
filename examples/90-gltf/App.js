@@ -18,7 +18,9 @@ class App extends Application {
         // await this.loader.load('../../common/models/carRoad2/carRoad2.gltf');
         // await this.loader.load('../../common/models/carRoad32/carRoad32.gltf');
         // await this.loader.load('../../common/models/test/carRoad3.gltf');
-        await this.loader.load('../../common/models/test/test.gltf');
+        //  await this.loader.load('../../common/models/test/test.gltf');
+        // await this.loader.load('../../common/models/test2/test2.gltf');
+        await this.loader.load('../../common/models/kvadratnaCestaLight/kvadratnaCestaLight.gltf');
         // await this.loader.load('../../common/models/lap2/lap.gltf');
 
         this.scene = await this.loader.loadScene(this.loader.defaultScene);
@@ -57,10 +59,14 @@ class App extends Application {
         this.initHandlers();
 
         this.speed = 0.0;
-        this.maxSpeed = 0.6;
-        this.acceleration = 0.01;
         this.rotation = 0;
-        this.rotatonSpeed = 0.03;
+        this.maxBoost = 2.5;
+
+        this.maxSpeed = 40;
+        this.acceleration = this.maxSpeed * 0.016;
+        this.rotatonSpeed = this.maxSpeed * 0.05;
+
+        this.boost = 1;
         this.rotate = true;
     }
 
@@ -76,6 +82,7 @@ class App extends Application {
 
     keyDownHandler(e) {
         if (e !== undefined) {
+            console.log(e.code);
             this.keys[e.code] = true;
         }
     }
@@ -113,86 +120,71 @@ class App extends Application {
         }
     }
 
+    movementHandler() {
+        if (this.speed != 0 && this.zidcollision() || this.collision([])) {
+            console.log("collision");
+            this.speed = 0 - this.speed;
+        }
+        else {
+            if (this.keys['KeyW']) {
+                if (this.speed < 0) {
+                    this.speed *= 0.95;
+                }
+                this.speed += this.acceleration;
+            } else if (this.keys['KeyS']) {
+                if (this.speed > 0) {
+                    this.speed *= 0.95;
+                }
+                this.speed -= this.acceleration;
+            }
+            else {
+                this.speed *= 0.95;
+            }
+        }
+
+        if (this.speed > this.maxSpeed) {
+            this.speed = this.maxSpeed;
+        } else if (this.speed < -this.maxSpeed) {
+            this.speed = -this.maxSpeed;
+        }
+
+        if (this.keys['KeyA']) {
+            this.rotation += this.rotatonSpeed * (this.speed / this.maxSpeed) * this.deltaTime;
+        } else if (this.keys['KeyD']) {
+            this.rotation -= this.rotatonSpeed * (this.speed / this.maxSpeed) * this.deltaTime;
+        }
+
+        if (this.keys['ShiftLeft'] && this.boost < this.maxBoost) {
+            this.boost += this.maxBoost * this.deltaTime * 2;
+        }
+        else if (this.boost > 1) {
+            this.boost -= this.maxBoost * this.deltaTime * 2;
+        }
+
+        if (this.keys['KeyP']) {
+            // this.camera.translation = vec3.fromValues(0, 2, 0);
+            // this.camera.translation = vec3.fromValues(
+            //     this.car.translation[0],
+            //     this.car.translation[1] + 2,
+            //     this.car.translation[2]);
+        }
+        if (this.keys['KeyO']) {
+            this.camera.translation = vec3.fromValues(0, 3, 7);
+        }
+        if (this.keys['KeyR']) {
+            this.rotateCamera();
+        }
+    }
+
 
     update() {
         this.keyDownHandler();
+        this.movementHandler();
 
-        try {
-            if (this.speed != 0 && this.zidcollision() || this.collision([])) {
-                console.log("collision");
-                this.speed = 0 - this.speed;
-            }
-            else {
-                if (this.keys['KeyW']) {
-                    if (this.speed < 0) {
-                        this.speed *= 0.95;
-                    }
-                    this.speed += this.acceleration;
-                }
-                else if (this.keys['KeyS']) {
-                    debugger;
-                    if (this.speed > 0) {
-                        this.speed *= 0.95;
-                    }
-                    this.speed -= this.acceleration;
-                }
-                else {
-                    this.speed *= 0.95;
-                }
-            }
-
-            if (this.speed > this.maxSpeed) {
-                this.speed = this.maxSpeed;
-            }
-
-            if (this.speed < -this.maxSpeed) {
-                this.speed = -this.maxSpeed;
-            }
-
-            if (this.keys['KeyA']) {
-                this.rotation += this.rotatonSpeed * (this.speed / this.maxSpeed);
-            } else if (this.keys['KeyD']) {
-                this.rotation -= this.rotatonSpeed * (this.speed / this.maxSpeed);
-            }
-            /*
-            if (this.keys['KeyE']) {
-                this.car.translation[2] += -this.speed*3;
-                this.car.updateMatrix();
-                this.camera.translation[2] += -this.speed*3;
-                this.camera.updateMatrix();
-            }
-            */
-
-            if (this.keys['KeyP']) {
-                // this.camera.translation = vec3.fromValues(0, 2, 0);
-                // this.camera.translation = vec3.fromValues(
-                //     this.car.translation[0],
-                //     this.car.translation[1] + 2,
-                //     this.car.translation[2]);
-            }
-            if (this.keys['KeyO']) {
-                this.camera.translation = vec3.fromValues(0, 3, 7);
-            }
-            if (this.keys['KeyR']) {
-                this.rotateCamera();
-            }
-
-
-            // let test = new Node({ rotation: quat.fromValues(0, 0, 0.1, 1) });
-            // this.car.translation[2] += -this.speed;
-
-            this.car.translation[0] -= this.speed * Math.sin(this.rotation);
-            this.car.translation[2] -= this.speed * Math.cos(this.rotation);
-
-            // this.camera.camera.matrix = mat4.rotateY(this.camera.camera.matrix, this.camera.camera.matrix, Math.PI); // rotacija kamere
-            // this.camera.updateMatrix();
-
-            this.car.updateMatrix();
-            this.car.rotateY(this.rotation);
-            
-        } catch (error) {
-            console.log(error);
-        }
+        this.car.translation[0] -= this.speed * Math.sin(this.rotation) * this.deltaTime * this.boost;
+        this.car.translation[2] -= this.speed * Math.cos(this.rotation) * this.deltaTime * this.boost;
+        this.car.updateMatrix();
+        this.car.rotateY(this.rotation);
     }
 
     render() {

@@ -6,6 +6,7 @@ export class Application {
         this.canvas = canvas;
         this._initGL(glOptions);
 
+        this.then = 0;
         Promise.resolve(this.start()).then(
             () => requestAnimationFrame(this._update)
         );
@@ -26,7 +27,10 @@ export class Application {
         }
     }
 
-    _update() {
+    _update(now) {
+        now *= 0.001;
+        this.deltaTime = now - this.then;
+        this.then = now;
         this._resize();
         this.update();
         this.render();
