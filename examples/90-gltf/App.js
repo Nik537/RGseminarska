@@ -18,8 +18,8 @@ class App extends Application {
         // await this.loader.load('../../common/models/carRoad2/carRoad2.gltf');
         // await this.loader.load('../../common/models/carRoad32/carRoad32.gltf');
         // await this.loader.load('../../common/models/test/carRoad3.gltf');
-        // await this.loader.load('../../common/models/test/test.gltf');
-        await this.loader.load('../../common/models/lap2/lap.gltf');
+        await this.loader.load('../../common/models/test/test.gltf');
+        // await this.loader.load('../../common/models/lap2/lap.gltf');
         
         this.scene = await this.loader.loadScene(this.loader.defaultScene);
 
@@ -105,6 +105,17 @@ class App extends Application {
         return false;
     }
 
+    zidcollision() {
+        // console.log(this.car.translation);
+        if (this.car.translation[0] < -119 || this.car.translation[0] > 119 || this.car.translation[2] < -111 || this.car.translation[2] > 111) {
+            return true;
+        } else if (this.car.translation[0] < -96 || this.car.translation[0] > 96 || this.car.translation[2] < -88 || this.car.translation[2] > 88) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
 
     update() {
         this.keyDownHandler();
@@ -123,7 +134,7 @@ class App extends Application {
             // }
 
             // if (this.collision([this.cube1, this.cube2, this.cube3])) {
-            if (this.collision([])) {
+            if (this.speed != 0 && this.zidcollision() || this.collision([])) {
                 console.log("collision");
                 this.speed = 0 - this.speed;
                 //this.sideSpeed = 0 - this.sideSpeed;
