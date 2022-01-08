@@ -21,7 +21,7 @@ class App extends Application {
         //  await this.loader.load('../../common/models/test/test.gltf');
         // await this.loader.load('../../common/models/test2/test2.gltf');
         await this.loader.load('../../common/models/kvadratnaCestaLight/kvadratnaCestaLight.gltf');
-        // await this.loader.load('../../common/models/lap2/lap.gltf');
+        //await this.loader.load('../../common/models/ograja/ograja.gltf');
 
         this.scene = await this.loader.loadScene(this.loader.defaultScene);
 
@@ -62,9 +62,9 @@ class App extends Application {
         this.rotation = 0;
         this.maxBoost = 2.5;
 
-        this.maxSpeed = 40;
+        this.maxSpeed = 50;
         this.acceleration = this.maxSpeed * 0.016;
-        this.rotatonSpeed = this.maxSpeed * 0.05;
+        this.rotatonSpeed = this.maxSpeed * 0.03;
 
         this.boost = 1;
         this.rotate = true;
@@ -91,6 +91,9 @@ class App extends Application {
         if (e.code == "KeyR") {
             this.rotate = true;
         }
+        if (e.code == "Space") {
+            this.drift = false;
+        }
     }
 
     rotateCamera() {
@@ -111,21 +114,84 @@ class App extends Application {
     }
 
     zidcollision() {
-        if (this.car.translation[0] < -119 || this.car.translation[0] > 119 || this.car.translation[2] < -111 || this.car.translation[2] > 111) {
+        if (this.car.translation[0] < -119) {
+            this.car.translation[0] += 1;
+            this.rotation = 2 * Math.PI - this.rotation;
+            this.speed /= 2;
             return true;
-        } else if (this.car.translation[0] < -96 || this.car.translation[0] > 96 || this.car.translation[2] < -88 || this.car.translation[2] > 88) {
-            return false;
-        } else {
+        }
+        if (this.car.translation[0] > 119) {
+            this.car.translation[0] -= 1;
+            this.rotation = 2 * Math.PI - this.rotation;
+            this.speed /= 2;
             return true;
+        }
+        if (this.car.translation[2] < -111) {
+            this.car.translation[2] += 1;
+            console.log(this.rotation);
+            this.rotation = Math.PI - this.rotation;
+            this.speed /= 2;
+            return true;
+        }
+        if (this.car.translation[2] > 111) {
+            this.car.translation[2] -= 1;
+            this.rotation = Math.PI - this.rotation;
+            this.speed /= 2;
+            return true;
+        }
+
+        // if (this.car.translation[0] < -119 || this.car.translation[0] > 119 || this.car.translation[2] < -111 || this.car.translation[2] > 111) {
+        //     return true;
+        // } else if (this.car.translation[0] < -96 || this.car.translation[0] > 96 || this.car.translation[2] < -88 || this.car.translation[2] > 88) {
+        //     return false;
+        // } else {
+        //     return true;
+        // }
+    }
+
+    driftHandler() {
+        if (!this.drift) {
+            this.drift = true;
+            if (this.keys['KeyA']) {
+                this.driftRotation = this.rotatonSpeed * (this.speed / this.maxSpeed) * this.deltaTime * 1.5;
+            } else if (this.keys['KeyD']) {
+                this.driftRotation = -this.rotatonSpeed * (this.speed / this.maxSpeed) * this.deltaTime * 1.5;
+            }
+            else {
+                this.driftRotation = 0;
+            }
         }
     }
 
     movementHandler() {
-        if (this.speed != 0 && this.zidcollision() || this.collision([])) {
-            console.log("collision");
+        if (this.zidcollision()) {
+            console.log("zid");
+        } else if (this.speed != 0 && this.collision([])) {
             this.speed = 0 - this.speed;
         }
-        else {
+        else if (this.drift) {
+            if (this.driftRotation == 0) {
+                this.speed *= 0.95;
+            }
+            this.rotation += this.driftRotation / 2;
+            if (this.keys['KeyA']) {
+                this.car.translation[2] -= this.maxSpeed * Math.sin(this.rotation) * this.deltaTime * 0.1;
+                this.car.translation[0] -= this.maxSpeed * Math.cos(this.rotation) * this.deltaTime * 0.1;
+                if (this.driftRotation > 0) {
+                    this.rotation += this.driftRotation / 2;
+                } else {
+                    this.rotation -= this.driftRotation / 4;
+                }
+            } else if (this.keys['KeyD']) {
+                this.car.translation[2] += this.maxSpeed * Math.sin(this.rotation) * this.deltaTime * 0.1;
+                this.car.translation[0] += this.maxSpeed * Math.cos(this.rotation) * this.deltaTime * 0.1;
+                if (this.driftRotation < 0) {
+                    this.rotation += this.driftRotation / 2;
+                } else {
+                    this.rotation -= this.driftRotation / 4;
+                }
+            }
+        } else {
             if (this.keys['KeyW']) {
                 if (this.speed < 0) {
                     this.speed *= 0.95;
@@ -138,7 +204,12 @@ class App extends Application {
                 this.speed -= this.acceleration;
             }
             else {
-                this.speed *= 0.95;
+                this.speed *= 0.995;
+            }
+            if (this.keys['KeyA']) {
+                this.rotation += this.rotatonSpeed * (this.speed / this.maxSpeed) * this.deltaTime;
+            } else if (this.keys['KeyD']) {
+                this.rotation -= this.rotatonSpeed * (this.speed / this.maxSpeed) * this.deltaTime;
             }
         }
 
@@ -148,16 +219,16 @@ class App extends Application {
             this.speed = -this.maxSpeed;
         }
 
-        if (this.keys['KeyA']) {
-            this.rotation += this.rotatonSpeed * (this.speed / this.maxSpeed) * this.deltaTime;
-        } else if (this.keys['KeyD']) {
-            this.rotation -= this.rotatonSpeed * (this.speed / this.maxSpeed) * this.deltaTime;
-        }
+        this.car.translation[0] -= this.speed * Math.sin(this.rotation) * this.deltaTime * this.boost;
+        this.car.translation[2] -= this.speed * Math.cos(this.rotation) * this.deltaTime * this.boost;
+        this.car.updateMatrix();
+        this.car.rotateY(this.rotation);
+    }
 
+    controlsHandler() {
         if (this.keys['ShiftLeft'] && this.boost < this.maxBoost) {
             this.boost += this.maxBoost * this.deltaTime * 2;
-        }
-        else if (this.boost > 1) {
+        } else if (this.boost > 1) {
             this.boost -= this.maxBoost * this.deltaTime * 2;
         }
 
@@ -174,17 +245,16 @@ class App extends Application {
         if (this.keys['KeyR']) {
             this.rotateCamera();
         }
+        if (this.keys['Space']) {
+            this.driftHandler();
+        }
     }
 
 
     update() {
         this.keyDownHandler();
+        this.controlsHandler();
         this.movementHandler();
-
-        this.car.translation[0] -= this.speed * Math.sin(this.rotation) * this.deltaTime * this.boost;
-        this.car.translation[2] -= this.speed * Math.cos(this.rotation) * this.deltaTime * this.boost;
-        this.car.updateMatrix();
-        this.car.rotateY(this.rotation);
     }
 
     render() {
