@@ -20,7 +20,8 @@ class App extends Application {
         // await this.loader.load('../../common/models/test/carRoad3.gltf');
         //  await this.loader.load('../../common/models/test/test.gltf');
         // await this.loader.load('../../common/models/test2/test2.gltf');
-        await this.loader.load('../../common/models/kvadratnaCestaLight/kvadratnaCestaLight.gltf');
+        // await this.loader.load('../../common/models/kvadratnaCestaLight/kvadratnaCestaLight.gltf');
+        await this.loader.load('../../common/models/grass/grass.gltf');
         //await this.loader.load('../../common/models/ograja/ograja.gltf');
 
         this.scene = await this.loader.loadScene(this.loader.defaultScene);
@@ -139,6 +140,20 @@ class App extends Application {
             this.speed /= 2;
             return true;
         }
+
+        if (this.car.translation[0] < 96 && this.car.translation[0] > -96 && this.car.translation[2] < 88 && this.car.translation[2] > -88) {
+            if (Math.abs(this.car.translation[0]) > Math.abs(this.car.translation[2])) {
+                this.car.translation[0] += (this.car.translation[0] > 0) ? 1 : -1;
+                this.rotation = 2 * Math.PI - this.rotation;
+            }
+            else {
+                this.rotation = Math.PI - this.rotation;
+                this.car.translation[2] += (this.car.translation[2] > 0) ? 1 : -1;
+            }
+            this.speed /= 2;
+            return true;
+        }
+        return false;
 
         // if (this.car.translation[0] < -119 || this.car.translation[0] > 119 || this.car.translation[2] < -111 || this.car.translation[2] > 111) {
         //     return true;
