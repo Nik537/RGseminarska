@@ -83,7 +83,7 @@ class App extends Application {
 
     keyDownHandler(e) {
         if (e !== undefined) {
-            console.log(e.code);
+            // console.log(e.code);
             this.keys[e.code] = true;
         }
     }
@@ -114,43 +114,46 @@ class App extends Application {
         return false;
     }
 
+    odbojX(a) {
+        this.rotation = (this.rotation + 2 * Math.PI) % (2 * Math.PI);
+        if (Math.abs(Math.abs(2 * Math.PI - this.rotation - this.rotation) - Math.PI) > 2.1) {
+            this.car.translation[0] += (this.car.translation[0] < 0) ? a : -a;
+            this.rotation = 2 * Math.PI - this.rotation;
+            this.speed /= 4;
+        }
+        else {
+            this.speed = 0 - this.speed;
+        }
+    }
+    odbojY(a) {
+        this.rotation = (this.rotation + 2 * Math.PI) % (2 * Math.PI);
+        if (Math.abs(Math.abs(Math.PI / 2 - this.rotation) - 1.7) > 1) {
+            this.car.translation[2] += (this.car.translation[2] < 2) ? a : -a;
+            this.rotation = Math.PI - this.rotation;
+            this.speed /= 4;
+        }
+        else {
+            this.speed = 0 - this.speed;
+        }
+    }
+
     zidcollision() {
-        if (this.car.translation[0] < -119) {
-            this.car.translation[0] += 1;
-            this.rotation = 2 * Math.PI - this.rotation;
-            this.speed /= 2;
+        if (this.car.translation[0] < -119 || this.car.translation[0] > 119) {
+            this.odbojX(1);
             return true;
         }
-        if (this.car.translation[0] > 119) {
-            this.car.translation[0] -= 1;
-            this.rotation = 2 * Math.PI - this.rotation;
-            this.speed /= 2;
-            return true;
-        }
-        if (this.car.translation[2] < -111) {
-            this.car.translation[2] += 1;
-            console.log(this.rotation);
-            this.rotation = Math.PI - this.rotation;
-            this.speed /= 2;
-            return true;
-        }
-        if (this.car.translation[2] > 111) {
-            this.car.translation[2] -= 1;
-            this.rotation = Math.PI - this.rotation;
-            this.speed /= 2;
+        if (this.car.translation[2] < -111 || this.car.translation[2] > 111) {
+            this.odbojY(1);
             return true;
         }
 
         if (this.car.translation[0] < 96 && this.car.translation[0] > -96 && this.car.translation[2] < 88 && this.car.translation[2] > -88) {
             if (Math.abs(this.car.translation[0]) > Math.abs(this.car.translation[2])) {
-                this.car.translation[0] += (this.car.translation[0] > 0) ? 1 : -1;
-                this.rotation = 2 * Math.PI - this.rotation;
+                this.odbojX(-1);
             }
             else {
-                this.rotation = Math.PI - this.rotation;
-                this.car.translation[2] += (this.car.translation[2] > 0) ? 1 : -1;
+                this.odbojY(-1);
             }
-            this.speed /= 2;
             return true;
         }
         return false;
@@ -180,7 +183,7 @@ class App extends Application {
 
     movementHandler() {
         if (this.zidcollision()) {
-            console.log("zid");
+            // console.log("zid");
         } else if (this.speed != 0 && this.collision([])) {
             this.speed = 0 - this.speed;
         }
