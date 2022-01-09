@@ -10,6 +10,8 @@ import { quat } from '../../lib/gl-matrix-module.js';
 const mat4 = glMatrix.mat4;
 const vec3 = glMatrix.vec3;
 
+
+
 class App extends Application {
 
     async start() {
@@ -21,7 +23,8 @@ class App extends Application {
         //  await this.loader.load('../../common/models/test/test.gltf');
         // await this.loader.load('../../common/models/test2/test2.gltf');
         // await this.loader.load('../../common/models/kvadratnaCestaLight/kvadratnaCestaLight.gltf');
-        await this.loader.load('../../common/models/grass/grass.gltf');
+        //await this.loader.load('../../common/models/grass/grass.gltf');
+        await this.loader.load('../../common/models/skyBox/skyBox.gltf');
         //await this.loader.load('../../common/models/ograja/ograja.gltf');
 
         this.scene = await this.loader.loadScene(this.loader.defaultScene);
@@ -29,7 +32,10 @@ class App extends Application {
         this.car = await this.loader.loadNode('carbody'); //TO JE TREBA PREMIKAT
 
         this.camera = new Node();
-        this.car.addChild(this.camera);
+        this.cameraRotator = new Node();
+        this.car.addChild(this.cameraRotator);
+        this.cameraRotator.addChild(this.camera);
+        // this.car.addChild(this.camera);
         //if(pov) this.camera.translation = vec3.fromValues(0,2,0);
         //else
         //this.camera.rotation = vec3.fromValues(0, 0, 0);
@@ -43,15 +49,33 @@ class App extends Application {
 
         this.camera.updateMatrix();
 
+        this.cubes = [];
+        for(let i = 1; i <= 14; i++){
+            this.cubes[i-1] = await this.loader.loadNode('Ovira'+ i);
+        }
+        this.cubes[14] = await this.loader.loadNode('Ovira1.001');
+        this.cubes[15] = await this.loader.loadNode('Ovira1.002');
+        this.cubes[16] = await this.loader.loadNode('Ovira1.003');
+        //this.cube1 = await this.loader.loadNode('Ovira1');
+        //this.cube1 = await this.loader.loadNode('Ovira2'); // nared to s forom
+        //this.cube1 = await this.loader.loadNode('Ovira3');
+        //this.cube1 = await this.loader.loadNode('Ovira4');
+        //this.cube1 = await this.loader.loadNode('Ovira5');
+        //this.cube1 = await this.loader.loadNode('Ovira1');
+        //this.cube1 = await this.loader.loadNode('Ovira1');
+        //this.cube1 = await this.loader.loadNode('Ovira1');
+        //this.cube1 = await this.loader.loadNode('Ovira1');
+        //this.cube1 = await this.loader.loadNode('Ovira1');
+        //this.cube1 = await this.loader.loadNode('Ovira1');
+        //this.cube1 = await this.loader.loadNode('Ovira1');
+        //this.cube1 = await this.loader.loadNode('Ovira1');
+        //this.cube1 = await this.loader.loadNode('Ovira1');
+        //this.cube15 = await this.loader.loadNode('Ovira1.001');
+        //this.cube16 = await this.loader.loadNode('Ovira1.002');
+        //this.cube17 = await this.loader.loadNode('Ovira1.003');
+        
 
-        // this.cube1 = await this.loader.loadNode('Cube.001');
-        // this.cube2 = await this.loader.loadNode('Cube');
-        // this.cube3 = await this.loader.loadNode('Cube.002');
-
-        // this.fance1 = await this.loader.loadNode('Cube.003');
-        // this.fance2 = await this.loader.loadNode('Cube.004');
-        // this.scene.addNode(this.car);
-        // this.scene.addNode(this.camera);
+        
 
 
         this.renderer = new Renderer(this.gl);
@@ -61,6 +85,7 @@ class App extends Application {
 
         this.speed = 0.0;
         this.rotation = 0;
+        this.cameraRotation = 0;
         this.maxBoost = 2.5;
 
         this.maxSpeed = 50;
@@ -114,23 +139,59 @@ class App extends Application {
         return false;
     }
 
+    calcAngleX(x) {
+        if (Math.abs(x) > Math.PI * 0.5) {
+            if (x > 0) {
+                return ((Math.PI * 2) - x) * -1;
+            } else {
+                return (-Math.PI * 2) - x;
+            }
+        }
+        return x;
+    }
+
+    calcAngleY(y) {
+        if (Math.abs(y) > Math.PI * 0.5) {
+            if (y > 0) {
+                return ((Math.PI * 2) - y) * -1;
+            } else {
+                return (-Math.PI * 2) - y;
+            }
+        }
+        return y;
+    }
+
     odbojX(a) {
         this.rotation = (this.rotation + 2 * Math.PI) % (2 * Math.PI);
-        if (Math.abs(Math.abs(2 * Math.PI - this.rotation - this.rotation) - Math.PI) > 2.1) {
+        console.log(Math.abs(Math.abs(this.rotation / Math.PI - 1) - 0.5));
+        // if (Math.abs(Math.abs(2 * Math.PI - this.rotation - this.rotation) - Math.PI) > 2.1 && false) {
+        if (Math.abs(Math.abs(this.rotation / Math.PI - 1) - 0.5) > 0.4) {
             this.car.translation[0] += (this.car.translation[0] < 0) ? a : -a;
+
+
+            this.cameraRotation += this.rotation - ((2 * Math.PI) - this.rotation);
+            this.cameraRotation = this.calcAngleX(this.cameraRotation);
+
             this.rotation = 2 * Math.PI - this.rotation;
-            this.speed /= 4;
+            this.speed /= 2;
         }
         else {
             this.speed = 0 - this.speed;
         }
     }
+
     odbojY(a) {
-        this.rotation = (this.rotation + 2 * Math.PI) % (2 * Math.PI);
-        if (Math.abs(Math.abs(Math.PI / 2 - this.rotation) - 1.7) > 1) {
+        this.rotation = (this.rotation + (2 * Math.PI)) % (2 * Math.PI);
+        console.log(Math.abs(Math.abs(this.rotation / Math.PI - 1) - 0.5));
+        if (Math.abs(Math.abs(this.rotation / Math.PI - 1) - 0.5) < 0.08) {
             this.car.translation[2] += (this.car.translation[2] < 2) ? a : -a;
+
+
+            this.cameraRotation += this.rotation - (Math.PI - this.rotation);
+            this.cameraRotation = this.calcAngleY(this.cameraRotation);
+
             this.rotation = Math.PI - this.rotation;
-            this.speed /= 4;
+            this.speed /= 2;
         }
         else {
             this.speed = 0 - this.speed;
@@ -184,7 +245,7 @@ class App extends Application {
     movementHandler() {
         if (this.zidcollision()) {
             // console.log("zid");
-        } else if (this.speed != 0 && this.collision([])) {
+        } else if (this.speed != 0 && this.collision(this.cubes)) {
             this.speed = 0 - this.speed;
         }
         else if (this.drift) {
@@ -241,6 +302,10 @@ class App extends Application {
         this.car.translation[2] -= this.speed * Math.cos(this.rotation) * this.deltaTime * this.boost;
         this.car.updateMatrix();
         this.car.rotateY(this.rotation);
+        this.cameraRotator.updateMatrix();
+        this.cameraRotation %= (2 * Math.PI);
+        this.cameraRotation *= 1 - (this.deltaTime * 2);
+        this.cameraRotator.rotateY(this.cameraRotation);
     }
 
     controlsHandler() {
