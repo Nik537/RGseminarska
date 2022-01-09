@@ -27,7 +27,7 @@ in vec2 vTexCoord;
 
 out vec4 oColor;
 
-float lightness = 0.5;
+float lightness = 1.0;
 
 void main() {
     oColor = texture(uTexture, vTexCoord) * vec4(lightness, lightness, lightness, 1);
