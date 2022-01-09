@@ -4,6 +4,8 @@ import { WebGL } from '../../common/engine/WebGL.js';
 
 import { shaders } from './shaders.js';
 
+import { Light } from './Light.js';
+
 // This class prepares all assets for use with WebGL
 // and takes care of rendering.
 
@@ -115,6 +117,7 @@ export class Renderer {
         const attributeNameToIndexMap = {
             POSITION   : 0,
             TEXCOORD_0 : 1,
+            NORMAL : 2,
         };
 
         for (const name in primitive.attributes) {
