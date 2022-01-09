@@ -25,19 +25,20 @@ class App extends Application {
         this.car = await this.loader.loadNode('carbody'); //TO JE TREBA PREMIKAT
 
         this.camera = new Node();
+        this.cameraFPS = new Node();
         this.cameraRotator = new Node();
         this.car.addChild(this.cameraRotator);
         this.cameraRotator.addChild(this.camera);
-        // this.car.addChild(this.camera);
-        //if(pov) this.camera.translation = vec3.fromValues(0,2,0);
-        //else
-        //this.camera.rotation = vec3.fromValues(0, 0, 0);
+        this.cameraRotator.addChild(this.cameraFPS);
         this.camera.translation = vec3.fromValues(-0.21, 4, -7); //0,3,6
         this.camera.updateMatrix();
-        // this.camera.rotation = vec3.fromValues(0, 0, 0);
+        this.cameraFPS.translation = vec3.fromValues(0.4, 2, 0);
+        this.cameraFPS.updateMatrix();
+        this.cameraFPS.rotateY(Math.PI);
 
 
         this.camera.camera = new PerspectiveCamera();
+        this.cameraFPS.camera = new PerspectiveCamera();
 
 
         this.camera.updateMatrix();
@@ -68,7 +69,8 @@ class App extends Application {
 
         this.boost = 1;
         this.rotate = true;
-
+        
+        this.swapCamera = true;
         this.points = 0;
         this.lastposition = 1;
     }
@@ -96,6 +98,9 @@ class App extends Application {
         }
         if (e.code == "Space") {
             this.drift = false;
+        }
+        if (e.code == "KeyP") {
+            this.swapCamera = true;
         }
     }
 
@@ -303,11 +308,12 @@ class App extends Application {
         }
 
         if (this.keys['KeyP']) {
-            // this.camera.translation = vec3.fromValues(0, 2, 0);
-            // this.camera.translation = vec3.fromValues(
-            //     this.car.translation[0],
-            //     this.car.translation[1] + 2,
-            //     this.car.translation[2]);
+            if (this.swapCamera) {
+                let swapCamera = this.camera
+                this.camera = this.cameraFPS;
+                this.cameraFPS = swapCamera;
+                this.swapCamera = false;
+            }
         }
         if (this.keys['KeyO']) {
             this.camera.translation = vec3.fromValues(0, 3, 7);
