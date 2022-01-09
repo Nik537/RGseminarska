@@ -254,7 +254,7 @@ class App extends Application {
             }
             this.rotation += this.driftRotation / 2;
             if (this.keys['KeyA']) {
-                this.car.translation[2] -= this.maxSpeed * Math.sin(this.rotation) * this.deltaTime * 0.1;
+                this.car.translation[2] += this.maxSpeed * Math.sin(this.rotation) * this.deltaTime * 0.1;
                 this.car.translation[0] -= this.maxSpeed * Math.cos(this.rotation) * this.deltaTime * 0.1;
                 if (this.driftRotation > 0) {
                     this.rotation += this.driftRotation / 2;
@@ -262,7 +262,7 @@ class App extends Application {
                     this.rotation -= this.driftRotation / 4;
                 }
             } else if (this.keys['KeyD']) {
-                this.car.translation[2] += this.maxSpeed * Math.sin(this.rotation) * this.deltaTime * 0.1;
+                this.car.translation[2] -= this.maxSpeed * Math.sin(this.rotation) * this.deltaTime * 0.1;
                 this.car.translation[0] += this.maxSpeed * Math.cos(this.rotation) * this.deltaTime * 0.1;
                 if (this.driftRotation < 0) {
                     this.rotation += this.driftRotation / 2;
