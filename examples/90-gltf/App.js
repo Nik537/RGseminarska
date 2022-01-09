@@ -68,6 +68,9 @@ class App extends Application {
 
         this.boost = 1;
         this.rotate = true;
+
+        this.points = 0;
+        this.lastposition = 1;
     }
 
     initHandlers() {
@@ -137,7 +140,7 @@ class App extends Application {
 
     odbojX(a) {
         this.rotation = (this.rotation + 2 * Math.PI) % (2 * Math.PI);
-        console.log(Math.abs(Math.abs(this.rotation / Math.PI - 1) - 0.5));
+        // console.log(Math.abs(Math.abs(this.rotation / Math.PI - 1) - 0.5));
         // if (Math.abs(Math.abs(2 * Math.PI - this.rotation - this.rotation) - Math.PI) > 2.1 && false) {
         if (Math.abs(Math.abs(this.rotation / Math.PI - 1) - 0.5) > 0.4) {
             this.car.translation[0] += (this.car.translation[0] < 0) ? a : -a;
@@ -148,15 +151,17 @@ class App extends Application {
 
             this.rotation = 2 * Math.PI - this.rotation;
             this.speed /= 2;
+            this.updatePoints(-1);
         }
         else {
             this.speed = 0 - this.speed;
+            this.updatePoints(-2);
         }
     }
 
     odbojY(a) {
         this.rotation = (this.rotation + (2 * Math.PI)) % (2 * Math.PI);
-        console.log(Math.abs(Math.abs(this.rotation / Math.PI - 1) - 0.5));
+        // console.log(Math.abs(Math.abs(this.rotation / Math.PI - 1) - 0.5));
         if (Math.abs(Math.abs(this.rotation / Math.PI - 1) - 0.5) < 0.08) {
             this.car.translation[2] += (this.car.translation[2] < 2) ? a : -a;
 
@@ -166,9 +171,11 @@ class App extends Application {
 
             this.rotation = Math.PI - this.rotation;
             this.speed /= 2;
+            this.updatePoints(-1);
         }
         else {
             this.speed = 0 - this.speed;
+            this.updatePoints(-2);
         }
     }
 
@@ -216,11 +223,17 @@ class App extends Application {
         }
     }
 
+    updatePoints(x) {
+        this.points += x;
+        console.log((x > 0 ? "Po novem krogu imate število točk: " : "Po trku imate število točk: ") + this.points);
+    }
+
     movementHandler() {
         if (this.zidcollision()) {
             // console.log("zid");
         } else if (this.speed != 0 && this.collision(this.cubes)) {
             this.speed = 0 - this.speed;
+            this.updatePoints(-2);
         }
         else if (this.drift) {
             if (this.driftRotation == 0) {
@@ -305,13 +318,29 @@ class App extends Application {
         if (this.keys['Space']) {
             this.driftHandler();
         }
+        if (this.keys['KeyQ']) {
+            console.log(this.car.translation);
+        }
     }
 
+    checkLap() {
+        if (this.lastposition == 0 && this.car.translation[0] < 0 && this.car.translation[2] < 0) {
+            this.lastposition = 1;
+            this.updatePoints(10);
+        } else if (this.lastposition == 1 && this.car.translation[0] > 0 && this.car.translation[2] < 0) {
+            this.lastposition = 2;
+        } else if (this.lastposition == 2 && this.car.translation[0] > 0 && this.car.translation[2] > 0) {
+            this.lastposition = 3;
+        } else if (this.lastposition == 3 && this.car.translation[0] < 0 && this.car.translation[2] > 0) {
+            this.lastposition = 0;
+        }
+    }
 
     update() {
         this.keyDownHandler();
         this.controlsHandler();
         this.movementHandler();
+        this.checkLap();
     }
 
     render() {
